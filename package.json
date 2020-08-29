@@ -1,0 +1,19 @@
+{
+  "name": "aws-notion-site",
+  "version": "0.0.1",
+  "description": "Deploy Notion Site to AWS",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "serverless": "^1.80.0",
+    "serverless-dotenv-plugin": "^3.0.0"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "node-fetch": "^2.6.0"
+  },
+  "volta": {
+    "node": "12.18.3",
+    "yarn": "1.22.5"
+  }
+}

@@ -1,0 +1,88 @@
+service: notion-site
+
+frameworkVersion: ">=1.1.0 <2.0.0"
+
+provider:
+  name: aws
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 30
+  apiGateway:
+    binaryMediaTypes:
+      - 'image/*'
+      - 'video/*'
+  environment:
+    DOMAIN_NAME: ${env:DOMAIN_NAME}
+
+plugins:
+  - serverless-dotenv-plugin
+
+resources:
+  Resources:
+    CloudFrontDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Enabled: true
+          Origins:
+            - Id: ApiGateway
+              DomainName:
+                Fn::Join:
+                  - ""
+                  - - Ref: ApiGatewayRestApi
+                    - ".execute-api."
+                    - Ref: AWS::Region
+                    - ".amazonaws.com"
+              CustomOriginConfig:
+                HTTPPort: '80'
+                HTTPSPort: '443'
+                OriginProtocolPolicy: https-only
+                OriginSSLProtocols: [ "TLSv1", "TLSv1.1", "TLSv1.2" ]
+              OriginPath: "/${self:provider.stage}"
+          Aliases:
+            - ${env:DOMAIN_NAME}
+            - 'www.${env:DOMAIN_NAME}'
+          DefaultCacheBehavior:
+            Compress: true
+            AllowedMethods:
+              - DELETE
+              - GET
+              - HEAD
+              - OPTIONS
+              - PATCH
+              - POST
+              - PUT
+            CachedMethods:
+              - HEAD
+              - GET
+            ForwardedValues:
+              QueryString: true
+              Headers:
+                - Accept
+                - Referer
+                - Authorization
+                - Content-Type
+                - Origin
+                - Access-Control-Request-Method
+                - Access-Control-Request-Headers
+              Cookies:
+                Forward: all
+            TargetOriginId: ApiGateway
+            ViewerProtocolPolicy: redirect-to-https
+          PriceClass: PriceClass_100
+          ViewerCertificate:
+            AcmCertificateArn: ${env:ACM_CERT_ARN}
+            SslSupportMethod: sni-only
+
+functions:
+  notionWorker:
+    handler: edge.handler
+    events:
+      - http:
+          method: ANY
+          path: '{pathname+}'
+      - http:
+          method: ANY
+          path: '/'
