@@ -1,9 +1,12 @@
 {
   "name": "aws-notion-site",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Deploy Notion Site to AWS",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "deploy": "sls deploy --verbose"
+  },
   "devDependencies": {
     "serverless": "^1.80.0",
     "serverless-dotenv-plugin": "^3.0.0"
