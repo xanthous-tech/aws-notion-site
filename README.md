@@ -25,7 +25,7 @@ We are trying to deploy [our Notion site](https://x-tech.io), but we couldn't ge
 
 ## Why not use Lambda@Edge?
 
-I actually have tried, and it would have worked well until the size of the request is larger than 1MB, which is the response size limit for Lambda@Edge. I wish we can eventually use edge lambdas because the performance would be better.
+I actually have tried, and it would have worked well until the size of the response is larger than 1MB, which is the response size limit for Lambda@Edge. I wish we can eventually use edge lambdas because the performance would be better.
 
 ## License
 
