@@ -24,6 +24,7 @@ SOFTWARE.
 
 'use strict';
 const fetch = require('node-fetch');
+const qs = require('qs');
 const cheerio = require('cheerio');
 
 /* CONFIGURATION STARTS HERE */
@@ -38,6 +39,7 @@ const MY_DOMAIN = process.env.DOMAIN_NAME;
  */
 const SLUG_TO_PAGE = {
   '': 'ee367a564e5a49a58a5ce89503d21ccd',
+  'blog': 'a0359e491e7a48d6be754538c6d78c39',
 };
 
 /* Step 3: enter your page title and description for SEO purposes */
@@ -126,6 +128,9 @@ async function fetchAndApply(request) {
 
   delete request.headers.Host;
   delete request.headers.Via;
+  delete request.headers.Referer;
+
+  console.log(JSON.stringify(request.headers));
 
   if (request.httpMethod === "OPTIONS") {
     return handleOptions(request);
@@ -155,12 +160,16 @@ async function fetchAndApply(request) {
     };
   }
 
-  const notionUrl = "https://www.notion.so" + request.path;
+  const notionUrl = "https://www.notion.so" + request.path + (!request.queryStringParameters ? '' : '?' + qs.stringify(request.queryStringParameters || {}));
   let response;
 
   if (request.path.startsWith("/app") && request.path.endsWith("js")) {
     console.log('return script');
-    response = await fetch(notionUrl);
+    response = await fetch(notionUrl, {
+      method: request.httpMethod,
+      headers: request.headers,
+      body: request.body,
+    });
     let body = await response.text();
     body = body
       .replace(/www.notion.so/g, MY_DOMAIN)
@@ -181,11 +190,11 @@ async function fetchAndApply(request) {
     response = await fetch(notionUrl, {
       // TODO: if body is base64-encoded, decode here
       body: request.body,
-      headers: {
+      headers: Object.assign(request.headers, {
         "content-type": "application/json;charset=UTF-8",
         "user-agent":
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36"
-      },
+      }),
       method: request.httpMethod,
     });
 
@@ -219,6 +228,9 @@ async function fetchAndApply(request) {
   });
 
   let body;
+  // const headers = Object.assign(headersFromResponse(response), {
+  //   'cache-control': 'max-age=0',
+  // });
   const headers = headersFromResponse(response);
 
   if (headers['content-type'].indexOf('text') < 0 && headers['content-type'].indexOf('application') < 0) {

@@ -67,11 +67,14 @@ resources:
                 - Origin
                 - Access-Control-Request-Method
                 - Access-Control-Request-Headers
+                - Sec-Fetch-Dest
+                - Sec-Fetch-Mode
+                - Sec-Fetch-Site
               Cookies:
                 Forward: all
             TargetOriginId: ApiGateway
             ViewerProtocolPolicy: redirect-to-https
-          PriceClass: PriceClass_100
+          PriceClass: PriceClass_All
           ViewerCertificate:
             AcmCertificateArn: ${env:ACM_CERT_ARN}
             SslSupportMethod: sni-only
